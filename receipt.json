@@ -1,0 +1,62 @@
+[
+[
+    {
+        "name":"ТЗОВ ТВК \"Львівхолод\"",
+      	"address":"УКРАЇНА, ЛЬВІВСЬКА ОБЛАСТЬ, РАДЕХІВСЬКИЙ\nРАЙОН/М.РАДЕХІВ Р-Н, СМТ.ЛОПАТИН\nВУЛ.С.СТРІЛЬЦІВ, 8"
+    },
+    {
+        "PN":"015536813049",
+      	"ID":"01553681",
+      	"operator":"Гоменюк Валентина Михайлівна",
+      	"Check":"246 (588327)",
+      	"Z":"2854196",
+      	"paydesk":"5 [2]"
+    }
+],
+[
+    {
+      	"weight_or_count": 1.312,
+      	"price_for_weight_or_count": 74.90,
+        "product_name": "П/Ф ГОМІЛКА КУРЯЧА 1КГ КУРЯТ_ОХОЛ"
+
+    },
+    {
+      	"weight_or_count": 1.000,
+      	"price_for_weight_or_count": 19.90,
+        "product_name": "КЕТЧУП ДО ШАШЛИКУ ДОЙ/П 400Г ТОРЧИН"
+
+    },
+    {
+      	"weight_or_count": 1.000,
+      	"price_for_weight_or_count": 51.24,
+        "product_name": "ШАМПІН МАРИН ЦІЛІ 420Г RIO"
+
+    },
+    {
+      	"weight_or_count": 3.000,
+      	"price_for_weight_or_count": 9.50,
+        "product_name": "СИР ПЛ GOUDA 40% 70Г MOLENDAM"
+
+    },
+    {
+      	"weight_or_count": 1.000,
+      	"price_for_weight_or_count": 51.74,
+        "product_name": "АНАНАСИ КУСОЧ 580Г RIO"
+
+    },
+    {
+      	"weight_or_count": 3.000,
+      	"price_for_weight_or_count": 10.44,
+        "product_name": "ПРИПР ДО КАРТОПЛІ 30Г ЛЮБИСТОК"
+
+    }
+],
+[
+    {
+	      "receipt": "104713124",
+	      "FN": "4000138375",
+	      "cash": 401.00,
+        "?": "13019"
+    }
+]
+]
