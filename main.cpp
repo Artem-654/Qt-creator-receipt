@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include <vector>
+#include <memory>
 #include <QApplication>
 #include <QtWidgets>
 #include <QImage>
@@ -13,7 +15,7 @@
 #include <QJsonValue>
 
 enum Type {
-    TEXT, IMAGE
+    TEXT, PRODUCT
 };
 enum Style {
     BOLD = 0x00001,
@@ -21,9 +23,156 @@ enum Style {
     ITALIC = 0x00100,
 };
 enum Align {
-    LEFT = Qt::AlignLeft, CENTER = Qt::AlignHCenter, RIGHT = Qt::AlignRight
+    LEFT = Qt::AlignLeft,
+    CENTER = Qt::AlignHCenter,
+    RIGHT = Qt::AlignRight
 };
 
+
+class Item {
+protected:
+    int size = 1;
+    Type type;
+    Align align;
+    QString text;
+
+    Align charToAlign(char alignChar) {
+        switch (alignChar) {
+            case 'L': return LEFT;
+            case 'C': return CENTER;
+            case 'R': return RIGHT;
+            default: throw std::invalid_argument("Invalid align value");
+        }
+
+    }
+
+public:
+    Item(QJsonObject obj)
+        : type(static_cast<Type>(obj["type"].toInt())),
+          align(charToAlign(obj["align"].toString().at(0).toLatin1())),
+          text(obj["text"].toString()){}
+
+    virtual void printItem(int &lines, QRect &textRect, QPainter &painter, QFont font) = 0;
+};
+
+class TextItem : public Item {
+protected:
+    Style style;
+
+    Style arrayToStyle(const QJsonArray &styleArray) {
+        int styleBitmask = 0;
+            for (const auto &value : styleArray) {
+                QString styleStr = value.toString().toUpper();
+                if (styleStr == "BOLD") {
+                    styleBitmask |= BOLD;
+                } else if (styleStr == "UNDERLINE") {
+                    styleBitmask |= UNDERLINE;
+                } else if (styleStr == "ITALIC") {
+                    styleBitmask |= ITALIC;
+                }
+            }
+            return static_cast<Style>(styleBitmask);
+    }
+
+    void applyStyle(QPainter &painter, QFont &font) {
+        if (style & BOLD) {
+            font.setBold(true);
+        }
+        else
+        {
+            font.setBold(false);
+        }
+        if (style & ITALIC) {
+            font.setItalic(true);
+        }
+        else
+        {
+            font.setItalic(false);
+        }
+        if (style & UNDERLINE) {
+            font.setUnderline(true);
+        }
+        else
+        {
+            font.setUnderline(false);
+        }
+
+        painter.setFont(font);
+    }
+public:
+    TextItem(QJsonObject obj) : Item(obj), style(arrayToStyle(obj["style"].toArray())){
+        for(int i = 0, textSizePerLine = 0;i<text.size();i++, textSizePerLine++)
+        {
+            if(text.at(i) == '\n')
+            {
+                size++;
+                textSizePerLine = 0;
+                continue;
+            }else if(!(textSizePerLine%49))
+            {
+                text.insert(i,'\n');
+                size++;
+            }
+        }
+    }
+    void printItem(int &lines, QRect &textRect, QPainter &painter, QFont font) override
+    {
+        QString tempText;
+        for(int i = 0;i<lines;i++)
+            tempText += '\n';
+
+        tempText += text;
+        applyStyle(painter, font);
+        painter.drawText(textRect, align | Qt::TextWordWrap, tempText);
+
+        lines += size;
+    }
+};
+
+class ProductItem : public TextItem {
+protected:
+    float price;
+    float weight;
+public:
+    ProductItem(QJsonObject obj) : TextItem(obj), price(obj["price"].toDouble()),
+                                   weight(obj["weight"].toDouble()){}
+    void printItem(int &lines, QRect &textRect, QPainter &painter, QFont font) override
+    {
+        QString tempText;
+        lines++;
+        if(weight != 1.000)
+        {
+            for(int i = 0;i<lines;i++)
+                tempText += '\n';
+            tempText += QString::number(weight, 'f',3);
+            tempText += " X";
+            painter.drawText(textRect, LEFT | Qt::TextWordWrap, tempText);
+            tempText = "";
+
+            for(int i = 0;i<lines;i++)
+                tempText += '\n';
+            tempText += QString::number(price,'f',2);
+            tempText += '\n';
+            painter.drawText(textRect, RIGHT | Qt::TextWordWrap, tempText);
+            tempText = "";
+        }
+
+        for(int i = 0;i<lines;i++)
+            tempText += '\n';
+        tempText += text;
+        applyStyle(painter, font);
+        painter.drawText(textRect, align | Qt::TextWordWrap, tempText);
+
+        tempText = "\n";
+        for(int i = 0;i<lines;i++)
+            tempText += '\n';
+        tempText += QString::number(price * weight,'f',2);
+        tempText += " A";
+        painter.drawText(textRect, RIGHT | Qt::TextWordWrap, tempText);
+
+        lines += size;
+    }
+};
 
 class TextToImageWidget : public QWidget {
 public:
@@ -35,26 +184,46 @@ public:
         if(file.open(QIODevice::ReadOnly | QFile::Text))
             doc = QJsonDocument::fromJson(QByteArray(file.readAll()),&docError);
         if (doc.isArray()) {
-                mainJsonArray = doc.array();
-                qDebug() << "Main JSON array size:" << mainJsonArray.size();
+                jsonArray = doc.array();
+                qDebug() << "Main JSON array size:" << jsonArray.size();
             } else {
-                qDebug() << "Error: JSON document is not an array.";
+                qDebug() << "Error: JSON document is not an array." << docError.errorString();
                 return;
             }
         file.close();
         currentDateTime = QDateTime::currentDateTime();
+        for (int i = 0; i < jsonArray.size(); i++)
+        {
+            QJsonValue value = jsonArray.at(i);
+            if(value.isObject())
+            {
+                QJsonObject obj = value.toObject();
+                switch(obj["type"].toInt())
+                {
+                case 0:
+                    arrayItems.push_back(std::unique_ptr<TextItem>(new TextItem(obj)));
+                    break;
+                case 1:
+                    arrayItems.push_back(std::unique_ptr<ProductItem>(new ProductItem(obj)));
+                    break;
+                }
+            }
+        }
     }
-
-    int calculation_of_height()
+    static int get_hight()
     {
-
-        return 800;
+        return lines * 15;
     }
-
+    static void add_to_lines()
+    {
+        lines++;
+    }
 protected:
 
+    static int lines;
+    std::vector<std::unique_ptr<Item>> arrayItems;
     QJsonDocument doc;
-    QJsonArray mainJsonArray,jsonArray;
+    QJsonArray jsonArray;
     QJsonParseError docError;
     QDateTime currentDateTime;
 
@@ -65,182 +234,34 @@ protected:
         painter.fillRect(rect(), Qt::white);
 
         QRect textRect = rect();
-        QString text = "";
 
-        int lines = 1;
-        double sum = 0;
         QFont font("Verdana", 10);
         painter.setFont(font);
         painter.setPen(Qt::black);
 
-        QJsonArray jsonArray = mainJsonArray.at(0).toArray();
         for (int i = 0; i < jsonArray.size(); i++)
         {
-            QJsonValue value = jsonArray.at(i);
-            if(value.isObject())
-            {
-                QJsonObject obj = value.toObject();
-                if(i == 0)
-                {
-                    for(int i = 0; i < lines ; i++)
-                        text += '\n';
-                    text += obj["name"].toString();
-                    text += '\n';
-                    text += obj["address"].toString();
-                    text += '\n';
-                    text += "МАГАЗИН";
-                    lines += 5;
-                    painter.drawText(textRect, CENTER | Qt::TextWordWrap, text);
-                }else
-                {
-                    text = "";
-                    for(int i = 0; i < lines ; i++)
-                        text += '\n';
-                    text += "ПН: ";
-                    text += obj["PN"].toString();
-                    text += '\n';
-                    text += "ІД: ";
-                    text += obj["ID"].toString();
-                    text += '\n';
-                    text += "Оператор: ";
-                    text += obj["operator"].toString();
-                    text += '\n';
-                    text += "Чек # ";
-                    text += obj["Check"].toString();
-                    text += '\n';
-                    text += "Z: ";
-                    text += obj["Z"].toString();
-                    text += '\n';
-                    text += "Касса: ";
-                    text += obj["paydesk"].toString();
-                    text += '\n';
-                    lines += 6;
-                    painter.drawText(textRect, LEFT | Qt::TextWordWrap, text);
-                }
-            }
+            arrayItems[i]->printItem(lines, textRect, painter, font);
+            //painter.drawText(textRect, CENTER | Qt::TextWordWrap, text);
         }
-
-
-        jsonArray = mainJsonArray.at(1).toArray();
-
-        foreach(const QJsonValue &value, jsonArray)
-        {
-            if(value.isObject())
-            {
-                QJsonObject obj = value.toObject();
-
-                lines++;
-                if(obj["weight_or_count"].toDouble() != 1.000)
-                {
-                    text = "";
-                    for(int i = 0; i < lines ; i++)
-                        text += '\n';
-                    text += QString::number(obj["weight_or_count"].toDouble(), 'f',3);
-                    text += " X";
-
-                    qDebug() << text << '\n';
-                    painter.drawText(textRect, LEFT | Qt::TextWordWrap, text);
-
-                    text = "";
-                    for(int i = 0; i < lines ; i++)
-                        text += '\n';
-                    text += QString::number(obj["price_for_weight_or_count"].toDouble(),'f',2);
-                    lines++;
-                    qDebug() << text << '\n';
-                    qDebug() << lines << '\n';
-
-                    painter.drawText(textRect, RIGHT | Qt::TextWordWrap, text);
-                }
-
-                text = "";
-                for(int i = 0; i < lines ; i++)
-                    text += '\n';
-                text += obj["product_name"].toString();
-
-                qDebug() << text << '\n';
-                painter.drawText(textRect, LEFT | Qt::TextWordWrap, text);
-
-                text = "";
-                for(int i = 0; i < lines ; i++)
-                    text += '\n';
-                double result = obj["price_for_weight_or_count"].toDouble() * obj["weight_or_count"].toDouble();
-                sum += result;
-                text += QString::number(result, 'f',2);
-                text += " A";
-                lines++;
-
-                qDebug() << lines << '\n';
-                qDebug() << text << '\n';
-                painter.drawText(textRect, RIGHT | Qt::TextWordWrap, text);
-            }
-
-        }
-
-        text = "";
-        for(int i = 0; i < lines ; i++)
-            text += '\n';
-        text += "------------------------------------------------------------\n\n\n\n";
-        text += "------------------------------------------------------------\n\n\n";
-        text += "------------------------------------------------------------\n\n\n\n";
-        text += QString::number(jsonArray.size());
-        text += " АРТИКУЛІВ\n\n";
-        text += currentDateTime.toString("dd.MM.yyyy hh:mm:ss");
-        text += "\n\n\n\n\n\n\n\n\nФІСКАЛЬНИЙ ЧЕК";
-        qDebug() << lines << '\n';
-        qDebug() << text << '\n';
-        painter.drawText(textRect, CENTER | Qt::TextWordWrap, text);
-        jsonArray = mainJsonArray.at(2).toArray();
-        if(jsonArray[0].isObject())
-        {
-            QJsonObject obj = jsonArray[0].toObject();
-
-            text = "";
-            for(int i = 0; i < lines ; i++)
-                text += '\n';
-            text += "\n\nГОТІВКА\nРЕШТА\n\nСУМА\nПДВ А 20.00%\n\nЗаокруглення:\nДо сплати:\n\n\nЧЕК ";
-            text += obj["receipt"].toString();
-            text += "\n\n\n\n\n\n\n\nФН ";
-            text += obj["FN"].toString();
-            painter.drawText(textRect, LEFT | Qt::TextWordWrap, text);
-
-            text = "";
-            for(int i = 0; i < lines ; i++)
-                text += '\n';
-            text += "\n\n";
-            text += QString::number(obj["cash"].toDouble(),'f',2);
-            text += '\n';
-            double rounded = (obj["cash"].toDouble() - sum) - qRound(obj["cash"].toDouble() - sum);
-            text += QString::number(obj["cash"].toDouble() - sum, 'f',2);
-            text += "\n\n";
-            text += QString::number(sum,'f',2);
-            text += '\n';
-            text += QString::number(sum-(sum / 1.2),'f',2);
-            text += "\n\n";
-            text += QString::number(rounded,'f',2);
-            text += '\n';
-            text += QString::number(sum + rounded,'f',2);
-            text += "\n\n\n";
-            text += "ОНЛАЙН\n\n\n\n\n\n\n\n";
-            text += obj["?"].toString();
-            painter.drawText(textRect, RIGHT | Qt::TextWordWrap, text);
-        }
-
+        lines = 0;
         QImage image = QImage(size(), QImage::Format_ARGB32);
         QPainter imagePainter(&image);
         render(&imagePainter);
+        qDebug() << QString::number(TextToImageWidget::height());
         imagePainter.end();
 
         image.save("text_image.png");
     }
 };
-
+int TextToImageWidget::lines = 1;
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
         TextToImageWidget widget;
-        widget.resize(400, widget.calculation_of_height());
+        widget.resize(400, 720);
         widget.show();
 
         return app.exec();
