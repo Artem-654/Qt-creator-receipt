@@ -1,62 +1,86 @@
 [
-[
     {
-        "name":"ТЗОВ ТВК \"Львівхолод\"",
-      	"address":"УКРАЇНА, ЛЬВІВСЬКА ОБЛАСТЬ, РАДЕХІВСЬКИЙ\nРАЙОН/М.РАДЕХІВ Р-Н, СМТ.ЛОПАТИН\nВУЛ.С.СТРІЛЬЦІВ, 8"
+        "type": 0,
+        "align": "C",
+        "text": "ТЗОВ ТВК \"Львівхолод\"\nУКРАЇНА, ЛЬВІВСЬКА ОБЛАСТЬ, РАДЕХІВСЬКИЙ\nРАЙОН/М.РАДЕХІВ Р-Н, СМТ.ЛОПАТИН\nВУЛ.С.СТРІЛЬЦІВ, 8",
+        "style": ["UNDERLINE","ITALIC","BOLD"]
     },
     {
-        "PN":"015536813049",
-      	"ID":"01553681",
-      	"operator":"Гоменюк Валентина Михайлівна",
-      	"Check":"246 (588327)",
-      	"Z":"2854196",
-      	"paydesk":"5 [2]"
+        "type": 0,
+        "align": "L",
+        "text": "PN: 015536813049\nID: 01553681",
+        "style": []
+    },
+    {
+        "type": 0,
+        "align": "L",
+        "text": "operator: Гоменюк Валентина Михайлівна",
+        "style": []
+    },
+    {
+        "type": 0,
+        "align": "L",
+        "text": "Check: 246 (588327)\nZ: 2854196\nКасса: 5 [2]",
+        "style": []
+    },
+    {
+        "type": 1,
+        "align": "L",
+        "text": "П/Ф ГОМІЛКА КУРЯЧА 1КГ КУРЯТ_ОХОЛ",
+        "style": [],
+        "price": 74.90,
+        "weight": 1.312
+    },
+    {
+        "type": 1,
+        "align": "L",
+        "text": "КЕТЧУП ДО ШАШЛИКУ ДОЙ/П 400Г ТОРЧИН",
+        "style": [],
+        "price": 19.90,
+        "weight": 1.000
+    },
+    {
+        "type": 1,
+        "align": "L",
+        "text": "ШАМПІН МАРИН ЦІЛІ 420Г RIO",
+        "style": [],
+        "price": 51.24,
+        "weight": 1.000
+    },
+    {
+        "type": 1,
+        "align": "L",
+        "text": "СИР ПЛ GOUDA 40% 70Г MOLENDAM",
+        "style": [],
+        "price": 9.50,
+        "weight": 3.000
+    },
+    {
+        "type": 1,
+        "align": "L",
+        "text": "АНАНАСИ КУСОЧ 580Г RIO",
+        "style": [],
+        "price": 51.74,
+        "weight": 1.000
+    },
+    {
+        "type": 1,
+        "align": "L",
+        "text": "ПРИПР ДО КАРТОПЛІ 30Г ЛЮБИСТОК",
+        "style": [],
+        "price": 10.44,
+        "weight": 3.000
+    },
+    {
+        "type": 0,
+        "align": "L",
+        "text": "ГОТІВКА 401.00 ГРН\nРЕШТА 120.00\nСУМА 280.97\nПДВ А 20.00% 46.83\nЗаокруглення: 0.03\nДо сплати: 281.00",
+        "style": []
+    },
+    {
+        "type": 0,
+        "align": "L",
+        "text": "ЧЕК: 104713124\nФН: 4000138375\nГотівка: 401.00\n13019",
+        "style": []
     }
-],
-[
-    {
-      	"weight_or_count": 1.312,
-      	"price_for_weight_or_count": 74.90,
-        "product_name": "П/Ф ГОМІЛКА КУРЯЧА 1КГ КУРЯТ_ОХОЛ"
-
-    },
-    {
-      	"weight_or_count": 1.000,
-      	"price_for_weight_or_count": 19.90,
-        "product_name": "КЕТЧУП ДО ШАШЛИКУ ДОЙ/П 400Г ТОРЧИН"
-
-    },
-    {
-      	"weight_or_count": 1.000,
-      	"price_for_weight_or_count": 51.24,
-        "product_name": "ШАМПІН МАРИН ЦІЛІ 420Г RIO"
-
-    },
-    {
-      	"weight_or_count": 3.000,
-      	"price_for_weight_or_count": 9.50,
-        "product_name": "СИР ПЛ GOUDA 40% 70Г MOLENDAM"
-
-    },
-    {
-      	"weight_or_count": 1.000,
-      	"price_for_weight_or_count": 51.74,
-        "product_name": "АНАНАСИ КУСОЧ 580Г RIO"
-
-    },
-    {
-      	"weight_or_count": 3.000,
-      	"price_for_weight_or_count": 10.44,
-        "product_name": "ПРИПР ДО КАРТОПЛІ 30Г ЛЮБИСТОК"
-
-    }
-],
-[
-    {
-	      "receipt": "104713124",
-	      "FN": "4000138375",
-	      "cash": 401.00,
-        "?": "13019"
-    }
-]
 ]
